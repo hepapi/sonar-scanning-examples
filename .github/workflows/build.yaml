@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     name: Build and analyze
-    runs-on: ubuntu-latest
+    runs-on: sonarquberunner
     
     steps:
       - uses: actions/checkout@v4
@@ -38,5 +38,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          cd /sonar-scanner-gradle/gradle-basic
+          cd $GITHUB_WORKSPACE/sonar-scanner-gradle/gradle-basic
           ./gradlew build sonar --info
