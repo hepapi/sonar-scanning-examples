@@ -10,39 +10,53 @@ on:
 jobs:
   build:
     name: Build and analyze
+    # 💡 Windows yerine Ubuntu kullanmak için değiştirildi.
     runs-on: sonarquberunner
     
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0  # Sığ kopyalamalar analiz için devre dışı bırakıldı.
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: 17
-          distribution: 'zulu' # Alternative distribution options are available.
+          distribution: 'zulu'
+
       - name: Cache SonarQube packages
         uses: actions/cache@v4
         with:
-          path: ~\.sonar\cache
+          # Linux'ta home dizini tilde (~) ile temsil edilir ve ters slash yerine düz slash kullanılır.
+          path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
+
       - name: Cache SonarQube scanner
         id: cache-sonar-scanner
         uses: actions/cache@v4
         with:
-          path: .\.sonar\scanner
+          # Ters slash yerine düz slash kullanıldı.
+          path: ./.sonar/scanner
           key: ${{ runner.os }}-sonar-scanner
           restore-keys: ${{ runner.os }}-sonar-scanner
+
       - name: Install SonarQube scanner
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
-        shell: powershell
+        # 💡 powershell yerine varsayılan Linux shell'i olan bash kullanıldı.
+        shell: bash
         run: |
-          New-Item -Path .\.sonar\scanner -ItemType Directory
-          dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+          # 💡 PowerShell'deki New-Item yerine Bash'teki mkdir -p kullanıldı.
+          mkdir -p ./.sonar/scanner 
+          # Linux'ta path ayracı olarak düz slash (/) kullanılır.
+          dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
+
       - name: Build and analyze
-        shell: powershell
+        # 💡 powershell yerine bash kullanıldı.
+        shell: bash
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"CSharpProject" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
+          # 💡 PowerShell'deki '.\' yerine Linux'ta dizin çalıştırma için './' kullanıldı ve path düzeltildi.
+          ./.sonar/scanner/dotnet-sonarscanner begin /k:"CSharpProject" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
           dotnet build
-          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          # 💡 Path düzeltildi.
+          ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
