@@ -43,7 +43,7 @@ jobs:
           # -storepass changeit: Varsayılan Java Truststore şifresini kullanır.
           "$JAVA_HOME/bin/keytool" -import -trustcacerts -noprompt \
           -alias sonarqube_zero_ssl_ca_runner \
-          -file /home/ubuntu/actions-runner/sonarqube_ca.pem \
+          -file /home/ubuntu/actions-runner/sonarqube_ca_chain.pem \
           -keystore "$CACERTS_PATH" \
           -storepass changeit
           
