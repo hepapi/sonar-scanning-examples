@@ -38,5 +38,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
+          echo "SONAR_HOST_URL is set."
+          # Use --debug for maximum logging, but --info is usually enough
           cd $GITHUB_WORKSPACE/sonar-scanner-gradle/gradle-basic
-          ./gradlew build sonar --info
+          ./gradlew build sonar --debug 
