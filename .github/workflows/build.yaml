@@ -23,17 +23,17 @@ jobs:
         with:
           distribution: 'temurin' # Veya kullandığınız başka bir JDK dağıtımı
           java-version: '17' # Projenizin gerektirdiği Java versiyonu
-      - name: Install SonarQube certificate
-        env:
-          SONAR_CERT: ${{ secrets.SONAR_CERTIFICATE }}
-        run: |
-          echo "Installing SonarQube certificate..."
-          # Sertifikayı bir dosyaya yazdır
-          echo "${{ secrets.SONAR_CERTIFICATE }}" > sonar_cert.crt
-          # JDK'nın truststore'una sertifikayı ekle
-          # $JAVA_HOME değişkeni actions/setup-java tarafından ayarlanır
-          $JAVA_HOME/bin/keytool -importcert -alias sonarqube -keystore $JAVA_HOME/lib/security/cacerts -file sonar_cert.crt -storepass changeit -noprompt
-          echo "Certificate installed."
+      # - name: Install SonarQube certificate
+      #   env:
+      #     SONAR_CERT: ${{ secrets.SONAR_CERTIFICATE }}
+      #   run: |
+      #     echo "Installing SonarQube certificate..."
+      #     # Sertifikayı bir dosyaya yazdır
+      #     echo "${{ secrets.SONAR_CERTIFICATE }}" > sonar_cert.crt
+      #     # JDK'nın truststore'una sertifikayı ekle
+      #     # $JAVA_HOME değişkeni actions/setup-java tarafından ayarlanır
+      #     $JAVA_HOME/bin/keytool -importcert -alias sonarqube -keystore $JAVA_HOME/lib/security/cacerts -file sonar_cert.crt -storepass changeit -noprompt
+      #     echo "Certificate installed."
 
       - name: Cache SonarQube packages
         uses: actions/cache@v4
