@@ -15,41 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Derinliği 0 ayarlayarak tüm geçmişi getirir, bu Sonar analizleri için gereklidir.
-          fetch-depth: 0  
-
-      # ADIM 1: Java Truststore'a Sertifikayı Ekleme
-      # GitHub Actions runner'ının kullandığı Java ortamına özel CA sertifikasını tanıtır.
-      - name: Add SonarQube CA to Java Truststore
-        env:
-          # Sertifika içeriğini GitHub Secrets'tan güvenli bir şekilde alır.
-          CA_CERT: ${{ secrets.CA_CERTIFICATE_PEM }}
-        run: |
-          echo "Starting custom CA certificate installation..."
-          
-          # 1. JAVA_HOME'u bulma (runner ortamına göre otomatik bulur)
-          JAVA_HOME=$(readlink -f $(which java) | sed "s:/bin/java::")
-          CACERTS_PATH="$JAVA_HOME/lib/security/cacerts"
-          
-          echo "Discovered JAVA_HOME: $JAVA_HOME"
-          echo "Target CACERTS path: $CACERTS_PATH"
-          
-          # 2. CA sertifikasını geçici dosyaya yazar
-          echo "$CA_CERT" > /tmp/sonarqube_ca.pem
-          
-          # 3. keytool ile Truststore'a ekler
-          # -noprompt: Otomatik 'yes' onayı verir.
-          # -storepass changeit: Varsayılan Java Truststore şifresini kullanır.
-          "$JAVA_HOME/bin/keytool" -import -trustcacerts -noprompt \
-          -alias sonarqube_zero_ssl_ca_runner \
-          -file /home/ubuntu/actions-runner/sonarqube_ca_chain.pem \
-          -keystore "$CACERTS_PATH" \
-          -storepass changeit
-          
-          echo "Truststore successfully updated. SSL Handshake issues should be resolved for this JVM."
-
-      - uses: actions/checkout@v4
-        with:
           fetch-depth: 0  
       - name: Cache SonarQube packages
         uses: actions/cache@v4
