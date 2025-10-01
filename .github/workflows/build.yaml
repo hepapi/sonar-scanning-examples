@@ -10,30 +10,52 @@ on:
 jobs:
   build:
     name: Build and analyze
-    runs-on: sonarquberunner
+    runs-on: sonarquberunner # Kullandığınız runner'ın Java ve keytool yüklü olduğundan emin olun
     
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  
+          
+      # Java'yı kuran ve sertifikayı ekleyen adım
+      - name: Setup Java and add certificate
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin' # Veya kullandığınız başka bir JDK dağıtımı
+          java-version: '17' # Projenizin gerektirdiği Java versiyonu
+      - name: Install SonarQube certificate
+        env:
+          SONAR_CERT: ${{ secrets.SONAR_CERTIFICATE }}
+        run: |
+          echo "Installing SonarQube certificate..."
+          # Sertifikayı bir dosyaya yazdır
+          echo "${{ secrets.SONAR_CERTIFICATE }}" > sonar_cert.crt
+          # JDK'nın truststore'una sertifikayı ekle
+          # $JAVA_HOME değişkeni actions/setup-java tarafından ayarlanır
+          $JAVA_HOME/bin/keytool -importcert -alias sonarqube -keystore $JAVA_HOME/lib/security/cacerts -file sonar_cert.crt -storepass changeit -noprompt
+          echo "Certificate installed."
+
       - name: Cache SonarQube packages
         uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
+          
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
+          
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          # Gradle'ın doğru Java'yı kullanmasını sağla
+          JAVA_HOME: ${{ env.JAVA_HOME }}
         run: |
           echo "SONAR_HOST_URL is set."
-          # Use --debug for maximum logging, but --info is usually enough
           cd $GITHUB_WORKSPACE/sonar-scanner-gradle/gradle-basic
-          ./gradlew build sonar 
+          ./gradlew build sonar
